@@ -1,7 +1,6 @@
 package screens;
 
 import engine.*;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,15 +11,10 @@ import java.awt.*;
 public class PingPongGreenTable extends JPanel implements GameConstants{
 
     private JLabel label;
-
     private int computerRacket_Y = COMPUTER_RACKET_Y_START;	//начальные координнаты ракетки компа
-
     private int kidRacket_Y = KID_RACKET_Y_START;			//начальные координнаты ракетки игрока
-
     private int ballX = BALL_START_X;
     private int ballY = BALL_START_Y;
-
-
 
     Dimension preferredSize = new Dimension(TABLE_WIDTH,TABLE_HEIGHT);
 
@@ -29,15 +23,12 @@ public class PingPongGreenTable extends JPanel implements GameConstants{
         return preferredSize;
     }
 
-
     // Конструктор. Создает обработчик событий мыши.
     PingPongGreenTable(){
         PingPongGameEngine gameEngine = new PingPongGameEngine(this);
-
         addMouseMotionListener(gameEngine);		// Обрабатываем движения мыши для передвижения ракеток
         addKeyListener(gameEngine);				// Обрабатываем события клавиатуры
     }
-
 
     // Добавим в окно панель с JLabel
     void addPaneltoFrame(Container container) {
@@ -67,7 +58,7 @@ public class PingPongGreenTable extends JPanel implements GameConstants{
 
         // Нарисовать мяч
         g.setColor(Color.red);
-        g.fillOval(ballX,ballY,10,10);	//заданы размеры мяча 10*10
+        g.fillOval(ballX,ballY,BALL_SIZE,BALL_SIZE);	//заданы размеры мяча 10*10
 
         // Нарисовать белые линии!
         g.setColor(Color.white);
@@ -85,7 +76,7 @@ public class PingPongGreenTable extends JPanel implements GameConstants{
             this.kidRacket_Y = yCoordinate;
             repaint();
         }
-        else return;
+       // else return;
 
     }
 

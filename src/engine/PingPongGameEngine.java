@@ -3,6 +3,7 @@ package engine;
 import screens.GameConstants;
 import screens.PingPongGreenTable;
 
+import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -22,9 +23,10 @@ public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyLis
     private int ballX; // координата X мяча!
     private int ballY; // координата Y мяча!
     private boolean movingLeft = true;
+    private int verticalSlide;           //Значение вертикального передвижения мяча в пикселях!
+   // private volatile boolean setScore = true;
+
     private volatile boolean ballServed = false;
-    //Значение вертикального передвижения мяча в пикселях!
-    private int verticalSlide;
 
     // Конструктор. Содержит ссылку на объект стола
     public PingPongGameEngine(PingPongGreenTable greenTable) {
@@ -75,36 +77,42 @@ public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyLis
 
     // Обязательный метод run() из интерфейса Runnable
     public void run(){
-        boolean canBounce=false;
+        boolean canBounce;//=false;
         while (true) {
-            if (ballServed) { // если мяч движется!!!! !
+            if (ballServed) { // если мяч движется
 //Шаг 1. Мяч движется влево?
-                if (movingLeft && ballX > BALL_MIN_X) {
-                    canBounce = (ballY >= computerRacket_Y && ballY < (computerRacket_Y + RACKET_LENGTH) ? true : false);
+                if (movingLeft && ballX >= BALL_MIN_X) {
+                    canBounce = (ballY+BALL_SIZE/2 >= computerRacket_Y && ballY+BALL_SIZE/2 <= (computerRacket_Y + RACKET_LENGTH) ? true : false);
                     ballX -= BALL_INCREMENT;
 // Добавить смещение вверх или вниз к любым движениям мяча влево или вправо
-                    ballY -= verticalSlide;
+                    if (ballY==TABLE_TOP || ballY+BALL_SIZE==TABLE_BOTTOM) verticalSlide = verticalSlide*(-1);
+
+                        ballY -= verticalSlide;
                     table.setBallPosition(ballX, ballY);
 // Может отскочить?
-                    if (ballX <= COMPUTER_RACKET_X && canBounce) {
+                    if (ballX == COMPUTER_RACKET_X+RACKET_WIDTH && canBounce) {
                         movingLeft = false;
+                        verticalSlide = verticalSlide*(-1);
                     }
                 }
 // Шаг 2. Мяч движется вправо?
                 if (!movingLeft && ballX <= BALL_MAX_X) {
-                    canBounce = (ballY >= kidRacket_Y && ballY < (kidRacket_Y + RACKET_LENGTH) ? true : false);
+                    canBounce = (ballY+BALL_SIZE/2 >= kidRacket_Y && ballY+BALL_SIZE/2 <= (kidRacket_Y + RACKET_LENGTH) ? true : false);
                     ballX += BALL_INCREMENT;
+                    if (ballY==TABLE_TOP || ballY+BALL_SIZE==TABLE_BOTTOM) verticalSlide = verticalSlide*(-1);
+
+                    ballY += verticalSlide;
                     table.setBallPosition(ballX, ballY);
 // Может отскочить?
-                    if (ballX >= KID_RACKET_X && canBounce) {
+                    if (ballX+BALL_SIZE == KID_RACKET_X && canBounce) {
                         movingLeft = true;
+                        verticalSlide = verticalSlide*(-1);
                     }
                 }
 // Шаг 3. Перемещать ракетку компьютера вверх или вниз, чтобы блокировать мяч
-                if (computerRacket_Y < ballY
-                        && computerRacket_Y < TABLE_BOTTOM){
+                if (computerRacket_Y+RACKET_LENGTH/2 < ballY+BALL_SIZE/2 && computerRacket_Y+RACKET_LENGTH < TABLE_BOTTOM){
                     computerRacket_Y +=RACKET_INCREMENT;
-                }else if (computerRacket_Y > TABLE_TOP){
+                }else if (computerRacket_Y+RACKET_LENGTH/2 > ballY+BALL_SIZE/2 && computerRacket_Y > TABLE_TOP){
                     computerRacket_Y -=RACKET_INCREMENT;
                 }
                 table.setComputerRacket_Y(computerRacket_Y);
@@ -114,14 +122,19 @@ public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyLis
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-// Шаг 5. Обновить счет, если мячв зеленой области, но не движется
-                if (isBallOnTheTable()){
-                    if (ballX > BALL_MAX_X ){
+// Шаг 5. Обновить счет, если мяч в зеленой области, но не движется
+                if (isOut()){
+                    if (ballX+BALL_SIZE == BALL_MAX_X ){
                         computerScore++;
+                        System.out.println("Аут вправо");
                         displayScore();
-                    }else if (ballX < BALL_MIN_X){
+                     //   setScore = false;
+
+                    }else if (ballX == BALL_MIN_X){
                         kidScore++;
+                        System.out.println("Аут влево");
                         displayScore();
+                      //  setScore=false;
                     }
                 }
             } // Конец if ballServed
@@ -131,9 +144,11 @@ public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyLis
     // Подать с текущей позиции ракетки ребенка!
     private void kidServe(){
         ballServed = true;
-        ballX = KID_RACKET_X-1;
-        ballY=kidRacket_Y;
-        if (ballY > TABLE_HEIGHT/2){
+       // setScore=true;
+        movingLeft = true;
+        ballX = KID_RACKET_X-BALL_SIZE-1;
+        ballY=kidRacket_Y+RACKET_LENGTH/2-BALL_SIZE/2;
+        if (ballY+BALL_SIZE/2 > TABLE_HEIGHT/2){
             verticalSlide=-1;
         }else{
             verticalSlide=1;
@@ -143,20 +158,30 @@ public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyLis
     }
     private void displayScore(){
         ballServed = false;
+        table.setMessageText("Computer: "+ computerScore +
+                " Kid: " + kidScore);
         if (computerScore ==WINNING_SCORE){
-            table.setMessageText("Computer won! " + computerScore +
-                    ":" + kidScore);
+            JOptionPane.showConfirmDialog(null,
+                    "Computer won! " + computerScore +
+                            ":" + kidScore, "статус",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE);
+           /* table.setMessageText("Computer won! " + computerScore +
+                    ":" + kidScore);*/
+            endGame();
         }else if (kidScore ==WINNING_SCORE){
+            JOptionPane.showConfirmDialog(null,
+                    "You won! "+ kidScore +
+                            ":" + computerScore, "статус",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE);
             table.setMessageText("You won! "+ kidScore +
                     ":" + computerScore);
-        }else{
-            table.setMessageText("Computer: "+ computerScore +
-                    " Kid: " + kidScore);
+            endGame();
         }
     }
     // Проверить, не пересек ли мяч верхнюю или нижнюю границу стола
-    private boolean isBallOnTheTable(){
-        if (ballY >= BALL_MIN_Y && ballY <= BALL_MAX_Y){
+    private boolean isOut(){
+        if (ballX == BALL_MIN_X || ballX+BALL_SIZE == BALL_MAX_X){
+            System.out.println("аут");
             return true;
         }else {
             return false;
