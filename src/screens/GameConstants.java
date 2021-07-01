@@ -2,7 +2,6 @@ package screens;
 
 public interface GameConstants {
     // Размеры стола
-
     int TABLE_WIDTH = 330;		//ширина - по оис Х (влево-право)
     int TABLE_HEIGHT = 230;	//высота - по оси У (вверх-вниз)
 
