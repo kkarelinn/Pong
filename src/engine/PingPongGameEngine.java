@@ -9,10 +9,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
-/**
- * Этот класс – обработчик событий мыши и клавиатуры.
- * Рассчитывает движение мяча и ракеток,изменение их координат.
- */
+// Do some Changes
+//and some changes again
 public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyListener, GameConstants {
     private PingPongGreenTable table; // ссылка на стол!
     private int kidRacket_Y = KID_RACKET_Y_START;
