@@ -9,8 +9,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
-// Do some Changes
-//and some changes again
+//никаких коментариев
 public class PingPongGameEngine implements Runnable, MouseMotionListener, KeyListener, GameConstants {
     private PingPongGreenTable table; // ссылка на стол!
     private int kidRacket_Y = KID_RACKET_Y_START;
